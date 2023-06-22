@@ -19,6 +19,11 @@ e.g.
 aws_role_arn =  arn:aws:iam::012345678901:role/Admin
 aws_mfa_device = arn:aws:iam::012345678901:mfa/iphone
 duration = 3600
+
+[on-call]
+aws_role_arn =  arn:aws:iam::012345678901:role/OnCall
+aws_mfa_device = arn:aws:iam::012345678901:mfa/iphone
+duration = 3600
 ```
 
 When `break-glass` is run, if a MFA device is configured it will request
