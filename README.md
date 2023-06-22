@@ -1,14 +1,16 @@
-# multipass
+# break-glass
 
-Multipass is a simple tool to manage short lived AWS credentials.
+break-glass is a simple tool to manage short lived AWS credentials.
 
-It will assume a role(s) optionally with MFA authentication and save those
+![break glass for key](https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Sign_-_Key_-_Glass_%284891398099%29.jpg/319px-Sign_-_Key_-_Glass_%284891398099%29.jpg)
+
+It will assume roles (optionally) with MFA authentication and save those
 temporary credentials to an AWS profile.
 
 ## Usage
 
-Multipass is configured with an additional config file in the `~/.aws` directory
-`~/.aws/multipass`
+break-glass is configured with an additional config file in the `~/.aws` directory
+`~/.aws/break-glass`
 
 e.g.
 
@@ -19,6 +21,6 @@ aws_mfa_device = arn:aws:iam::012345678901:mfa/iphone
 duration = 3600
 ```
 
-When `multipass` is run, if a MFA device is configured it will request
+When `break-glass` is run, if a MFA device is configured it will request
 a token, then temporary credentials for the named role(s) will
 be written to the `~/.aws/credentials` file.

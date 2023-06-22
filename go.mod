@@ -1,4 +1,4 @@
-module github.com/errm/multipass
+module github.com/errm/break-glass
 
 go 1.20
 

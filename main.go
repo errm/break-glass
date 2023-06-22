@@ -53,7 +53,7 @@ func updateCredentials(client STSAssumeRoleAPI, context context.Context, config,
 		}
 		arn := section.Key("aws_role_arn").String()
 		duration := int32(section.Key("duration").MustInt(900))
-		sessionName := "multipass-session"
+		sessionName := "break-glass-session"
 		input := &sts.AssumeRoleInput{
 			RoleArn:         &arn,
 			RoleSessionName: &sessionName,
