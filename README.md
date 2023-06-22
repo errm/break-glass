@@ -22,5 +22,5 @@ duration = 3600
 ```
 
 When `break-glass` is run, if a MFA device is configured it will request
-a token, then temporary credentials for the named role(s) will
+a token, then temporary credentials for the named profile(s) will
 be written to the `~/.aws/credentials` file.

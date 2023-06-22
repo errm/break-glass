@@ -4,21 +4,38 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"reflect"
+	   "encoding/json"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
+
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go-v2/service/sts/types"
+
 	"gopkg.in/ini.v1"
 )
 
 func TestUpdateCredentials(t *testing.T) {
 	context := context.Background()
-	client := MockSTSClient{
-		t:                t,
-		expectedARN:      "arn:aws:iam::012345678901:role/Admin",
-		expectedMFA:      "arn:aws:iam::012345678901:mfa/iphone",
-		expectedToken:    "123456",
-		expectedDuration: 3600,
+	client := &MockSTSClient{
+		t: t,
+		expectations: []STSExpectation{
+			STSExpectation{
+				params: &sts.AssumeRoleInput{
+					RoleArn:         p("arn:aws:iam::012345678901:role/Admin"),
+					RoleSessionName: p("break-glass-session"),
+					DurationSeconds: p(int32(3600)),
+					SerialNumber:    p("arn:aws:iam::012345678901:mfa/iphone"),
+					TokenCode:       p("123456"),
+				},
+				output: &sts.AssumeRoleOutput{
+					Credentials: &types.Credentials{
+						AccessKeyId:     p("ACCESS_KEY_ID"),
+						SecretAccessKey: p("SECRET_KEY"),
+						SessionToken:    p("SESSION_TOKEN"),
+					},
+				},
+			},
+		},
 	}
 
 	configSource := strings.NewReader(`[test]
@@ -65,42 +82,37 @@ duration = 3600
 }
 
 type MockSTSClient struct {
-	t                *testing.T
-	expectedARN      string
-	expectedToken    string
-	expectedMFA      string
-	expectedDuration int32
+	t            *testing.T
+	expectations []STSExpectation
 }
 
-func (c MockSTSClient) AssumeRole(ctx context.Context,
+type STSExpectation struct {
+	params *sts.AssumeRoleInput
+	output *sts.AssumeRoleOutput
+}
+
+func (c *MockSTSClient) AssumeRole(ctx context.Context,
 	params *sts.AssumeRoleInput,
 	optFns ...func(*sts.Options)) (*sts.AssumeRoleOutput, error) {
 
-	if *params.RoleArn != c.expectedARN {
-		c.t.Errorf("Expected role ARN to be %s got %s", c.expectedARN, *params.RoleArn)
+	var expected STSExpectation
+	expected, c.expectations = c.expectations[0], c.expectations[1:]
+
+	if !reflect.DeepEqual(params, expected.params) {
+		c.t.Errorf("Expected params to be %s but got %s", j(*expected.params, c.t), j(*params, c.t))
 	}
 
-	if *params.SerialNumber != c.expectedMFA {
-		c.t.Errorf("Expected MFA SerialNumber to be %s got %s", c.expectedMFA, *params.SerialNumber)
-	}
+	return expected.output, nil
+}
 
-	if *params.TokenCode != c.expectedToken {
-		c.t.Errorf("Expected MFA Token to be %s got %s", c.expectedToken, *params.TokenCode)
-	}
+func p[Value any](v Value) *Value {
+    return &v
+}
 
-	if *params.DurationSeconds != c.expectedDuration {
-		c.t.Errorf("Expected duration to be %d got %d", c.expectedDuration, *params.DurationSeconds)
-	}
-
-	credentials := types.Credentials{
-		AccessKeyId:     aws.String("ACCESS_KEY_ID"),
-		SecretAccessKey: aws.String("SECRET_KEY"),
-		SessionToken:    aws.String("SESSION_TOKEN"),
-	}
-
-	output := &sts.AssumeRoleOutput{
-		Credentials: &credentials,
-	}
-
-	return output, nil
+func j(v interface{}, t *testing.T) []byte {
+    valueJson, err := json.Marshal(v)
+    if err != nil {
+      t.Fatal(err)
+    }
+    return valueJson
 }
