@@ -42,3 +42,13 @@ changelog:
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
+brews:
+- name: break-glass
+  homepage: https://github.com/errm/break-glass
+  description: break-glass is a simple tool to manage short lived AWS credentials
+  skip_upload: auto
+  repository:
+    owner: errm
+    name: homebrew-taps
+    pull_request:
+      enabled: false
