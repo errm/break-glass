@@ -49,6 +49,6 @@ brews:
   skip_upload: auto
   tap:
     owner: errm
-    name: homebrew-taps
+    name: homebrew-tools
     pull_request:
       enabled: false
