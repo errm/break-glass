@@ -50,5 +50,6 @@ brews:
   tap:
     owner: errm
     name: homebrew-tools
+    token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     pull_request:
       enabled: false
