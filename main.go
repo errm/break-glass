@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"context"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -14,6 +16,10 @@ import (
 )
 
 func main() {
+
+	profiles := flag.String("profiles", "all", "comma separated profiles to get credentials for")
+	flag.Parse()
+
 	context := context.Background()
 	cfg, err := config.LoadDefaultConfig(context)
 	check(err)
@@ -23,13 +29,25 @@ func main() {
 	homedir, err := os.UserHomeDir()
 	check(err)
 
-	config, err := ini.Load(homedir + "/.aws/multipass")
-	check(err)
-
 	credentials, err := ini.Load(homedir + "/.aws/credentials")
 	check(err)
 
-	check(updateCredentials(client, context, config, credentials, os.Stdin))
+	config, err := ini.Load(homedir + "/.aws/break-glass")
+	check(err)
+
+	sections := []*ini.Section{}
+
+	if *profiles == "all" {
+		sections = config.Sections()
+	} else {
+		for _, profile := range strings.Split(*profiles, ",") {
+			section, err := config.SectionsByName(profile)
+			check(err)
+			sections = append(sections, section...)
+		}
+	}
+
+	check(updateCredentials(client, context, sections, credentials, os.Stdin))
 	check(credentials.SaveTo(homedir + "/.aws/credentials"))
 }
 
@@ -46,8 +64,8 @@ type STSAssumeRoleAPI interface {
 		optFns ...func(*sts.Options)) (*sts.AssumeRoleOutput, error)
 }
 
-func updateCredentials(client STSAssumeRoleAPI, context context.Context, config, credentials *ini.File, console io.Reader) error {
-	for _, section := range config.Sections() {
+func updateCredentials(client STSAssumeRoleAPI, context context.Context, sections []*ini.Section, credentials *ini.File, console io.Reader) error {
+	for _, section := range sections {
 		if section.Name() == "DEFAULT" {
 			continue
 		}

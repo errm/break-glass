@@ -51,7 +51,7 @@ duration = 3600
 	credentials := ini.Empty()
 	console := strings.NewReader("123456")
 
-	err = updateCredentials(client, context, config, credentials, console)
+	err = updateCredentials(client, context, config.Sections(), credentials, console)
 	if err != nil {
 		t.Fatal(err)
 	}
