@@ -47,7 +47,7 @@ brews:
   homepage: https://github.com/errm/break-glass
   description: break-glass is a simple tool to manage short lived AWS credentials
   skip_upload: auto
-  repository:
+  tap:
     owner: errm
     name: homebrew-taps
     pull_request:
