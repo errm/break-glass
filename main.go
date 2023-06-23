@@ -29,7 +29,15 @@ func main() {
 	homedir, err := os.UserHomeDir()
 	check(err)
 
-	credentials, err := ini.Load(homedir + "/.aws/credentials")
+	credentialsPath := homedir + "/.aws/credentials"
+	if _, err := os.Stat(credentialsPath); os.IsNotExist(err) {
+		file, err := os.Create(credentialsPath)
+		file.Chmod(0600)
+		check(err)
+		file.Close()
+	}
+
+	credentials, err := ini.Load(credentialsPath)
 	check(err)
 
 	config, err := ini.Load(homedir + "/.aws/break-glass")
